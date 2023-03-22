@@ -1,45 +1,139 @@
+{-# LANGUAGE ApplicativeDo #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
-module Options (cmdOptions) where
+module Options (userOptions) where
 
+import Control.Arrow (left)
 import Import (Options)
 import Import hiding (Options (command))
 import Options.Applicative
+import Options.Applicative.Simple (simpleVersion)
+import Options.Applicative.Types
+import Path (parseRelDir, parseSomeDir, parseSomeFile)
+import qualified Paths_mansuki
 
-cmdOptions :: ParserInfo Options
-cmdOptions =
+
+userOptions :: ParserInfo Options
+userOptions =
     info
-        (userOptions <**> helper)
+        (helper <*> commandLineOptions)
         ( fullDesc
             <> header "Header for command line arguments "
             <> progDesc "Program description, also for command line arguments"
         )
 
-userOptions :: Parser Options
-userOptions =
-    Options
-        <$> switch
+
+commandLineOptions :: Parser Options
+commandLineOptions =
+    uncurry Options
+        <$> customSubParser
+            globalOpts
+            ( listTableCommand
+                <> addComicCommand
+            )
+
+
+customSubParser ::
+    forall a b.
+    Monoid a =>
+    Parser a ->
+    Mod CommandFields b ->
+    Parser (a, b)
+customSubParser globals cmds = do
+    g1 <- globals
+    (g2, r) <- addGlobals $ hsubparser cmds
+    pure (g1 <> g2, r)
+  where
+    addGlobals :: forall c. Parser c -> Parser (a, c)
+    addGlobals (NilP x) = NilP $ (mempty,) <$> x
+    addGlobals (OptP (Option (CmdReader n cs g) ps)) =
+        OptP (Option (CmdReader n cs $ fmap go . g) ps)
+      where
+        go p = p {infoParser = (,) <$> globals <*> infoParser p}
+    addGlobals (OptP o) = OptP ((mempty,) <$> o)
+    addGlobals (AltP p1 p2) = AltP (addGlobals p1) (addGlobals p2)
+    addGlobals (MultP p1 p2) =
+        MultP
+            ((\(g2, f) (g1, x) -> (g1 <> g2, f x)) <$> addGlobals p1)
+            (addGlobals p2)
+    addGlobals (BindP p k) = BindP (addGlobals p) $ \(g1, x) ->
+        BindP (addGlobals $ k x) $ \(g2, x') ->
+            pure (g1 <> g2, x')
+
+
+globalOpts :: Parser GlobalOptions
+globalOpts =
+    versionOption
+        <*> ( GlobalOptions
+                <$> verboseOption
+                <*> rootDirOption
+                <*> dbaseFileOption
+            )
+  where
+    versionOption =
+        infoOption
+            $(simpleVersion Paths_mansuki.version)
+            (long "version" <> help "Display version")
+    verboseOption =
+        switch
             ( long "verbose"
                 <> short 'v'
                 <> help "Verbose output?"
             )
-        <*> switch
-            ( long "version"
-                <> help "Display version information and exit"
+    rootDirOption =
+        option
+            (eitherReader $ left displayException . parseSomeDir)
+            ( short 'r'
+                <> long "root"
+                <> metavar "DIR"
+                <> value defaultRootDir
+                <> showDefault
+                <> help "Full path or relative path from current working directory to root directory of comics"
             )
-        <|> subparser
-            ( command "list" (info listCommand (progDesc "List known webs/comics"))
-                <> command "add" (info addCommand (progDesc "Add new comic"))
+    dbaseFileOption =
+        option
+            (eitherReader $ left displayException . parseSomeFile)
+            ( short 'b'
+                <> long "database"
+                <> metavar "FILE"
+                <> value defaultDbaseFile
+                <> showDefault
+                <> help "Full path or relative path from root directory of comics to database file"
             )
 
-listCommand :: Parser Command
-listCommand = option parseTables mempty
+
+listTableCommand :: Mod CommandFields Command
+listTableCommand =
+    command "list" (info listTableOptions (progDesc "List known webs/comics"))
   where
+    listTableOptions =
+        ListTable <$> argument parseTables (metavar "[webs|comics]")
     parseTables = eitherReader strToTable
     strToTable s
-        | s == "webs" = Right $ List WebsTable
-        | s == "comics" = Right $ List ComicsTable
+        | s == "webs" = Right WebsTable
+        | s == "comics" = Right ComicsTable
         | otherwise = Left "Expecting webs/comics"
 
-addCommand :: Parser Command
-addCommand = pure Add
+
+addComicCommand :: Mod CommandFields Command
+addComicCommand =
+    command "add" (info addComicOptions (progDesc "Add new comic"))
+  where
+    addComicOptions =
+        AddComic
+            <$> strOption
+                ( short 't'
+                    <> long "title"
+                    <> metavar "TITLE"
+                    <> help "Title of the comic"
+                )
+            <*> option
+                (eitherReader $ left displayException . parseRelDir)
+                ( short 'f'
+                    <> long "folder"
+                    <> metavar "FOLDER"
+                    <> help "Folder to store the comic"
+                )

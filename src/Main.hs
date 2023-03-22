@@ -1,26 +1,26 @@
 {-# LANGUAGE OverloadedRecordDot #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
 module Main (main) where
 
 import Import
 import Options
-import Options.Applicative
+import Options.Applicative (execParser)
 import RIO.Process
 import Run
 
+
 main :: IO ()
 main = do
-    userOptions <- execParser cmdOptions
+    programOptions <- execParser userOptions
 
-    lo <- logOptionsHandle stderr (userOptions.verbose)
-    pc <- mkDefaultProcessContext
-    withLogFunc lo $ \lf ->
+    logOptions <- logOptionsHandle stderr (programOptions.globalOptions.verbose)
+    procContext <- mkDefaultProcessContext
+    withLogFunc logOptions $ \logFunction ->
         let app =
                 App
-                    { logFunc = lf
-                    , processContext = pc
-                    , options = userOptions
+                    { logFunc = logFunction
+                    , processContext = procContext
+                    , options = programOptions
                     }
          in runRIO app run

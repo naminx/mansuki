@@ -1,28 +1,28 @@
 {pkgs}: let
-  myHaskell = pkgs.haskellPackages.override {
-    overrides = self: super: {
-      script-monad = pkgs.haskell.lib.dontCheck super.script-monad;
-      webdriver-w3c = pkgs.haskell.lib.dontCheck super.webdriver-w3c;
+  myHaskellPackages = pkgs.haskellPackages.override {
+    overrides = self: super: with pkgs.haskell.lib; {
+      script-monad = dontCheck super.script-monad;
+      webdriver-w3c = dontCheck super.webdriver-w3c;
     };
   };
 in {
-  deps = [
-    pkgs.alejandra
-    pkgs.fish
-    pkgs.less
-    pkgs.neovim
-    pkgs.nodejs
-    pkgs.sqlite
-    pkgs.stack
-    pkgs.unzip
+  deps = with pkgs; [
+    alejandra
+    fish
+    less
+    neovim
+    nodejs
+    sqlite
+    stack
+    unzip
     # Chrome
-    # pkgs.chromedriver
-    # pkgs.google-chrome
+    # chromedriver
+    # google-chrome
     # Haskell
-    pkgs.cabal-install
-    pkgs.haskell-language-server
-    # (pkgs.haskellPackages.ghcWithPackages (pkgs:
-    (myHaskell.ghcWithPackages (pkgs:
+    cabal-install
+    haskell-language-server
+    # (haskellPackages.ghcWithPackages (pkgs:
+    (myHaskellPackages.ghcWithPackages (pkgs:
       with pkgs; [
         # Custom packages
         esqueleto

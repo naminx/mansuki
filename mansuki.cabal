@@ -79,6 +79,7 @@ executable mansuki
                  ,    lens
                  ,    optparse-applicative
                  ,    optparse-simple
+                 ,    path
                  ,    pretty-simple
                  ,    rio
 
