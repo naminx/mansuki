@@ -15,4 +15,6 @@ run = do
     displayVersion <- asks (.options.version)
     if displayVersion
         then logInfo $ display $ T.pack $(simpleVersion Paths_mansuki.version)
-        else logInfo "We're inside the application!"
+        else do
+            optCommand <- asks (.options.command)
+            logInfo $ displayShow optCommand

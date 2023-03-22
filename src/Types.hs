@@ -6,10 +6,21 @@ module Types where
 import RIO
 import RIO.Process
 
+data Tables
+    = WebsTable
+    | ComicsTable
+    deriving (Eq, Show)
+
+data Command
+    = List Tables
+    | Add
+    deriving (Eq, Show)
+
 -- | Command line arguments
 data Options = Options
     { verbose :: !Bool
     , version :: !Bool
+    , command :: Command
     }
 
 data App = App

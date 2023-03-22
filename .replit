@@ -2,7 +2,7 @@ run = "cabal repl; fish"
 
 entrypoint = "Main.hs"
 
-hidden = [".ghci", "ghci_wrapper.sh"]
+hidden = [".ghci"]
 
 [nix]
 channel = "unstable"
