@@ -1,4 +1,4 @@
-indentation: 4
+indentation: 2
 function-arrows: trailing
 comma-style: leading
 import-export-style: leading

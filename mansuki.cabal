@@ -70,18 +70,23 @@ executable mansuki
                       Options
                       Run
                       Types
+                      ManSuki.Config
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
     build-depends:    base ^>=4.16.4.0
+                 ,    aeson
+                 ,    directory
+                 ,    filepath
                  ,    lens
                  ,    optparse-applicative
                  ,    optparse-simple
                  ,    path
                  ,    pretty-simple
                  ,    rio
+                 ,    yaml
 
     -- Directories containing source files.
     hs-source-dirs:   src

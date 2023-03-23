@@ -1,7 +1,5 @@
-{ pkgs }:
-
-with pkgs;
-let
+{pkgs}:
+with pkgs; let
   fish-vim = vimUtils.buildVimPluginFrom2Nix {
     pname = "fish-vim";
     version = "2023-02-04";
@@ -22,22 +20,21 @@ let
       sha256 = "0jfx84kcvzq7c1265j83xd1732hbckdp37d6x809armfmnqmxnzx";
     };
   };
-  myVimPlugins = with vimPlugins;
-    [
-      coc-nvim # for haskell language server
-      coc-python
-      coc-prettier
-      fish-vim # fish syntax highlighting
-      gruvbox # color scheme close to "Groovy Lambda"
-      haskell-vim # haskell syntax highlighting
-      rainbow # color parenthesis
-      vim-airline # customized status line
-      vim-lastplace # remember last position
-      vim-nix # nix source file highlight
-      vim-ormolu # format haskell source file when saving
-      vim-prettier
-      # deferred-clipboard
-    ];
+  myVimPlugins = with vimPlugins; [
+    coc-nvim # for haskell language server
+    coc-python
+    coc-prettier
+    fish-vim # fish syntax highlighting
+    gruvbox # color scheme close to "Groovy Lambda"
+    haskell-vim # haskell syntax highlighting
+    rainbow # color parenthesis
+    vim-airline # customized status line
+    vim-lastplace # remember last position
+    vim-nix # nix source file highlight
+    vim-ormolu # format haskell source file when saving
+    vim-prettier
+    # deferred-clipboard
+  ];
 in
   neovim.override {
     viAlias = true;
@@ -45,7 +42,7 @@ in
       customRC = lib.strings.fileContents ./init.vim;
       packages.myPlugins = with vimPlugins; {
         start = myVimPlugins;
-        opt = [ ];
+        opt = [];
       };
     };
   }

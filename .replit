@@ -1,8 +1,8 @@
-run = "cabal repl; fish"
+run = "cabal repl"
 
 entrypoint = "Main.hs"
 
-hidden = [".ghci"]
+hidden = [ ]
 
 [nix]
 channel = "unstable"

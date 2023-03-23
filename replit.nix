@@ -1,9 +1,10 @@
 {pkgs}: let
   myHaskellPackages = pkgs.haskellPackages.override {
-    overrides = self: super: with pkgs.haskell.lib; {
-      script-monad = dontCheck super.script-monad;
-      webdriver-w3c = dontCheck super.webdriver-w3c;
-    };
+    overrides = self: super:
+      with pkgs.haskell.lib; {
+        script-monad = dontCheck super.script-monad;
+        webdriver-w3c = dontCheck super.webdriver-w3c;
+      };
   };
 in {
   deps = with pkgs; [
@@ -29,16 +30,15 @@ in {
         fourmolu
         implicit-hie
         modern-uri
-        optparse-applicative
         optparse-simple
         path
         persistent-sqlite
         pretty-simple
         purebred-email
-        raw-strings-qq
         rio
         witherable
         wreq
+        yaml
         script-monad
         webdriver-w3c
       ]))
