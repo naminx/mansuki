@@ -1,10 +1,10 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 
-module Import
+module App.Import
   ( module RIO
-  , module Types
+  , module App.Types
   ) where
 
+import App.Types
 import RIO
-import Types
 

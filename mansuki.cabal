@@ -66,11 +66,16 @@ executable mansuki
 
     -- Modules included in this executable, other than Main.
     other-modules:    Paths_mansuki
-                      Import
-                      Options
-                      Run
-                      Types
-                      ManSuki.Config
+                      App.Config
+                      App.Import
+                      App.Options
+                      App.Run
+                      App.Types
+                      App.Types.App
+                      App.Types.Command
+                      App.Types.Config
+                      App.Types.GlobalOptions
+                      App.Types.Options
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:

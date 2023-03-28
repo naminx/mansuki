@@ -4,7 +4,7 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
-module Options (userOptions) where
+module App.Options (userOptions) where
 
 import Control.Arrow (left)
 import Data.Monoid (Any (..), Last (..))
@@ -17,21 +17,21 @@ import Path
 import qualified Paths_mansuki
 
 
-userOptions :: ParserInfo Options
-userOptions =
+userOptions :: SomeBase Dir -> SomeBase File -> ParserInfo Options
+userOptions configRootDir configDbaseFile =
   info
-    (helper <*> commandLineOptions)
+    (helper <*> commandLineOptions configRootDir configDbaseFile)
     ( fullDesc
         <> header "Header for command line arguments "
         <> progDesc "Program description, also for command line arguments"
     )
 
 
-commandLineOptions :: Parser Options
-commandLineOptions =
+commandLineOptions :: SomeBase Dir -> SomeBase File -> Parser Options
+commandLineOptions configRootDir configDbaseFile =
   uncurry Options
     <$> customSubParser
-      globalOpts
+      (globalOpts configRootDir configDbaseFile)
       ( listTableCommand
           <> addComicCommand
       )
@@ -65,8 +65,8 @@ customSubParser globals cmds = do
       pure (g1 <> g2, x')
 
 
-globalOpts :: Parser GlobalOptions
-globalOpts =
+globalOpts :: SomeBase Dir -> SomeBase File -> Parser GlobalOptions
+globalOpts configRootDir configDbaseFile =
   versionOption
     <*> ( GlobalOptions
             <$> verboseOption
@@ -93,7 +93,7 @@ globalOpts =
             <> long "root"
             <> metavar "DIR"
             <> value Nothing
-            <> showDefaultWith (maybe (fromAbsDir defaultRootDir) fromSomeDir)
+            <> showDefaultWith (maybe (fromSomeDir configRootDir) fromSomeDir)
             <> help "Full path or relative path from current working directory to root directory of comics"
         )
   dbaseFileOption =
@@ -104,7 +104,7 @@ globalOpts =
             <> long "database"
             <> metavar "FILE"
             <> value Nothing
-            <> showDefaultWith (maybe (fromRelFile defaultDbaseFile) fromSomeFile)
+            <> showDefaultWith (maybe (fromSomeFile configDbaseFile) fromSomeFile)
             <> help "Full path or relative path from root directory of comics to database file"
         )
 
