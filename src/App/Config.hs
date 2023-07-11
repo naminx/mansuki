@@ -1,61 +1,33 @@
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE OverlappingInstances #-}
-{-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
 module App.Config where
 
-import App.Import
-import Data.Monoid
-import Data.Yaml
-import Path
-import System.Environment (lookupEnv)
-import System.FilePath (splitSearchPath)
-import Text.Pretty.Simple
+import Data.Aeson
+import Path (Abs, Dir, File, Path, absdir, absfile)
+import RIO
 
+defaultComicDir :: Path Abs Dir
+-- defaultComicDir = [absdir|/home/runner/mansuki/comics|]
+defaultComicDir = [absdir|/mnt/n/Documents/Comics/|]
 
-defaultConfigFile :: Path Rel File
-defaultConfigFile = [relfile|mansuki.yaml|]
+defaultDbFile :: Path Abs File
+-- defaultDbFile = [absfile|/home/runner/mansuki/mansuki.db|]
+defaultDbFile = [absfile|/home/namin/mansuki/mansuki.db|]
 
-
-defaultConfig :: Config
+defaultConfig :: Value
 defaultConfig =
-  Config
-    (Rel [reldir|.|])
-    (Rel [relfile|mansuki.db|])
+  object
+    [ "comic-dir" .= defaultComicDir,
+      "db-file" .= defaultDbFile
+    ]
 
+maxContentLen :: Int
+maxContentLen = 500
 
-readConfig :: MonadIO m => m Config
-readConfig = do
-  lookupResult <- liftIO $ lookupEnv "XDG_CONFIG_HOME"
-  pPrint lookupResult
-  case lookupResult of
-    Nothing -> return defaultConfig
-    Just xdgConfigSearchPath -> do
-      readConfigFileResult <-
-        liftIO $ foldMap readConfigFile $ splitSearchPath xdgConfigSearchPath
-      case getFirst readConfigFileResult of
-        Nothing -> return defaultConfig
-        Just config -> return config
-
-
-readConfigFile :: FilePath -> IO (First Config)
-readConfigFile x = do
-  pPrint x
-  return $ First Nothing
-
--- }
-
-{--
-  case parseAbsDir xdgConfigDir of
-    Nothing -> return defaultConfig
-    Just xdgConfigPath -> do
-      decodeResult <-
-        liftIO $ decodeFileEither $ toFilePath $ xdgConfigPath </> defaultConfigFile
-      case decodeResult of
-        Left _ -> return defaultConfig
-        Right result -> return result
---}
+knownAllowedOrigins :: [Text]
+knownAllowedOrigins =
+  [ "chrome-extension://ddlogfgmonfikdiffdnjfilpmncgkiml/", -- wsl2
+    "chrome-extension://fnkbdldbljelgeikcfipeglijfmgcbah/" -- replit.com
+  ]

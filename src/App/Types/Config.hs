@@ -1,24 +1,42 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE NoFieldSelectors #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
-module App.Types.Config (Config (..)) where
+module App.Types.Config where
 
-import Data.Aeson (FromJSON (..), Value (Object), (.:))
-import Path (Dir, File, SomeBase)
+import Data.Aeson
+import Path (Abs, Dir, File, Path)
 import RIO
 
-
 data Config = Config
-  { comicDir :: SomeBase Dir
-  , dbFile :: SomeBase File
+  { comicDir :: !(Path Abs Dir),
+    dbFile :: !(Path Abs File)
   }
-  deriving (Eq, Show)
-
+  deriving (Show)
 
 instance FromJSON Config where
-  parseJSON (Object v) =
+  parseJSON = withObject "Config" $ \o ->
     Config
-      <$> (v .: "comic-directory")
-      <*> (v .: "database-file")
-  parseJSON _ = error "expecting object"
+      <$> (o .: "comic-dir")
+      <*> (o .: "db-file")
+
+{--
+defaultComicDir :: Path Abs Dir
+-- defaultComicDir = [absdir|/home/runner/mansuki/comics|]
+defaultComicDir = [absdir|/mnt/n/Documents/Comics/|]
+
+defaultDbFile :: Path Abs File
+-- defaultDbFile = [absfile|/home/runner/mansuki/mansuki.db|]
+defaultDbFile = [absfile|/home/namin/mansuki/mansuki.db|]
+
+maxContentLen :: Int
+maxContentLen = 500
+
+knownAllowedOrigins :: [Text]
+knownAllowedOrigins =
+  [ "chrome-extension://ddlogfgmonfikdiffdnjfilpmncgkiml/" -- wsl2
+  , "chrome-extension://fnkbdldbljelgeikcfipeglijfmgcbah/" -- replit.com
+  ]
+
+--}

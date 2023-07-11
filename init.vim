@@ -10,18 +10,18 @@ vnoremap <BS> d
 
 " clipboard with win32yank.exe
 " in ~/.local/bin/win32yank.exe
-let g:clipboard = {
-                \   'name': 'win32yank-wsl',
-                \   'copy': {
-                \      '+': 'win32yank.exe -i --crlf',
-                \      '*': 'win32yank.exe -i --crlf',
-                \    },
-                \   'paste': {
-                \      '+': 'win32yank.exe -o --lf',
-                \      '*': 'win32yank.exe -o --lf',
-                \   },
-                \   'cache_enabled': 1,
-                \ }
+" let g:clipboard = {
+"                 \   'name': 'win32yank-wsl',
+"                 \   'copy': {
+"                 \      '+': 'win32yank.exe -i --crlf',
+"                 \      '*': 'win32yank.exe -i --crlf',
+"                 \    },
+"                 \   'paste': {
+"                 \      '+': 'win32yank.exe -o --lf',
+"                 \      '*': 'win32yank.exe -o --lf',
+"                 \   },
+"                 \   'cache_enabled': 1,
+"                 \ }
 
 if has("clipboard")
   " CTRL-X and SHIFT-Del are Cut
@@ -96,7 +96,7 @@ exec "set listchars=tab:\uBB\uBB,trail:\uB7,nbsp:~"
 set list
 
 " Various customizations for Haskell
-let g:ormolu_command="/nix/store/mv4869fvrzwfjskpr1h9w1hg1bzaksph-fourmolu-0.10.1.0/bin/fourmolu"
+let g:ormolu_command="/nix/store/mzc6ykzvpvhmkkg2z1488bpyjgphr25r-fourmolu-0.9.0.0/bin/fourmolu"
 let g:ormolu_options=["--no-cabal"]
 let g:ormolu_suppress_stderr=1
 

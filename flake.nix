@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
     flake-parts.url = "github:hercules-ci/flake-parts";
     haskell-flake.url = "github:srid/haskell-flake";
   };
@@ -55,11 +55,11 @@
         };
         haskellProjects.default = {
           # packages.example.root = ./.;  # This value is detected based on .cabal files
-          overrides = self: super:
-            with pkgs.haskell.lib; {
-              script-monad = dontCheck super.script-monad;
-              webdriver-w3c = dontCheck super.webdriver-w3c;
-            };
+          # overrides = self: super:
+          #   with pkgs.haskell.lib; {
+          #     script-monad = dontCheck super.script-monad;
+          #     webdriver-w3c = dontCheck super.webdriver-w3c;
+          #   };
           devShell = {
             enable = true; # Enabled by default
             tools = hp: {
@@ -71,6 +71,7 @@
                 google-chrome
                 lambdabot
                 nodejs
+                nomacs
                 my-neovim
                 my-vscode
                 python3Full

@@ -1,13 +1,15 @@
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE NoFieldSelectors #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
 module App.Types.Options (Options (..)) where
 
-import App.Types.Command
-import App.Types.GlobalOptions
+import App.Types.Mode
+import RIO (Bool)
 
 
 data Options = Options
-  { globalOptions :: GlobalOptions
-  , command :: Command
+  { verbose :: !Bool
+  , debug :: !Bool
+  , mode :: !Mode
   }

@@ -68,14 +68,35 @@ executable mansuki
     other-modules:    Paths_mansuki
                       App.Config
                       App.Import
+                      App.Lib
+                      App.Lib.ANSI
+                      App.Lib.Esqueleto
+                      App.Lib.MIME
+                      App.Lib.Path
+                      App.Lib.Persist
+                      App.Lib.RText
+                      App.Lib.URI
                       App.Options
                       App.Run
                       App.Types
                       App.Types.App
-                      App.Types.Command
+                      App.Types.Chapter
+                      App.Types.Chapters
+                      App.Types.Comic
+                      App.Types.ComicInfo
                       App.Types.Config
-                      App.Types.GlobalOptions
+                      App.Types.Domain
+                      App.Types.Exceptions
+                      App.Types.Message
+                      App.Types.Mode
                       App.Types.Options
+                      App.Types.Persist
+                      App.Types.Pub
+                      App.Types.Title
+                      App.Types.URL
+                      App.Types.Volume
+                      App.Types.Web
+                      App.Types.WebInfo
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -83,14 +104,31 @@ executable mansuki
     -- Other library packages from which modules are imported.
     build-depends:    base ^>=4.16.4.0
                  ,    aeson
+                 ,    attoparsec
+                 ,    attoparsec-base64
+                 ,    base64
+                 ,    binary
                  ,    directory
+                 ,    esqueleto
+                 ,    extra
                  ,    filepath
+                 ,    http-api-data
                  ,    lens
+                 ,    modern-uri
                  ,    optparse-applicative
                  ,    optparse-simple
                  ,    path
+                 ,    path-pieces
+                 ,    persistent
+                 ,    persistent-sqlite
                  ,    pretty-simple
+                 ,    purebred-email
+                 ,    rawstring-qm
+                 ,    replace-attoparsec
                  ,    rio
+                 ,    scientific
+                 ,    string-conversions
+                 ,    text
                  ,    yaml
 
     -- Directories containing source files.
