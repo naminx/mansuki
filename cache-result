@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+nix build github:srid/devour-flake \
+  -L --no-link --print-out-paths --override-input flake . \
+  | cachix push namin

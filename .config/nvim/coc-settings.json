@@ -1,0 +1,12 @@
+{
+  "languageserver": {
+    "haskell": {
+      "command": "haskell-language-server-9.2.8",
+      "args": ["--lsp"],
+      "filetypes": ["haskell", "lhaskell"]
+    }
+  },
+  "prettier.enable": true,
+  "prettier.tabWidth": 2,
+  "coc.preferences.formatOnSave": true
+}
