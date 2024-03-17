@@ -22,6 +22,7 @@
         pkgs,
         ...
       }: {
+        packages.default = self'.packages.mansuki;
         haskellProjects.default = {
           # basePackages = pkgs.haskellPackages;
 
