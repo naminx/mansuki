@@ -11,13 +11,10 @@
 
   outputs = inputs @ {nixpkgs, ...}:
     inputs.flake-parts.lib.mkFlake {inherit inputs;} {
-      # systems = [ "x86_64-linux" ];
       systems = nixpkgs.lib.systems.flakeExposed;
       imports = [inputs.haskell-flake.flakeModule];
       perSystem = {
         self',
-        system,
-        lib,
         config,
         pkgs,
         ...
@@ -39,7 +36,6 @@
             tools = hp: {
               inherit
                 (hp)
-                rio
                 ;
             };
           };
