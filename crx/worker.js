@@ -152,12 +152,12 @@ async function scanweb(domain, override = undefined) {
   }
   scanning = true;
   my_console.clear();
-  log_ok(override);
+  log_ok("override", override);
   runtime_error = false;
   const web = await query_host("get_web_info", {
     url: "https://" + domain + "/",
   });
-  log_ok(web);
+  log_ok("web_info", web);
 
   /*
   const html = await run_code(tab.id, () => document.documentElement.outerHTML);
@@ -175,7 +175,7 @@ async function scanweb(domain, override = undefined) {
     script: web.getNthPage,
     argv: [1],
   });
-  log_ok(response);
+  log_ok("response", response);
   my_console.log("yeah");
   return;
 */
@@ -189,12 +189,24 @@ async function scanweb(domain, override = undefined) {
       web.getNthPage,
       page,
     ]);
-    log_ok(get_nth_page);
+    log_ok("nth_page", get_nth_page);
     const nth_page_path = get_nth_page[0].result;
     my_console.log("%cfetching page " + page, "color: gray");
     await navigateTab(tab.id, "https://" + web.domain + nth_page_path);
+    if (false && manga1001s.includes(current_domain)) {
+      await run_code(tab.id, exec_script, [
+        "" +
+          " const sleep = (msec) => new Promise((resolve) => " +
+          "   setTimeout(() => resolve(), msec));" +
+          " do { await sleep(1000); } " +
+          "   while (document.evaluate('" +
+          '     count(//div[contains(concat(" ", normalize-space(@class), " "), " iv-card ")]' +
+          '            /img[contains(concat(" ", normalize-space(@class), " "), " lazyloaded ")])' +
+          "',   document, null, XPathResult.NUMBER_TYPE, null).numberValue > 0);",
+      ]);
+    }
     const scrape_comics = await run_code(tab.id, exec_script, [web.getComics]);
-    log_ok(scrape_comics);
+    log_ok("get_comics", scrape_comics);
     const new_comics = !override ? scrape_comics[0].result : override;
     const urls = takeWhile(
       (comic_url) =>
@@ -204,6 +216,7 @@ async function scanweb(domain, override = undefined) {
             .replace("!", "%21") == web.lastVisit),
       new_comics.map((comic) => comic.url)
     );
+    log_ok("urls", urls);
     if (page == 1) {
       if (urls.length == 0) {
         my_console.log("%cdone: (no update)", "color: gray");
@@ -212,11 +225,11 @@ async function scanweb(domain, override = undefined) {
       next_last_visit = urls[0];
     }
     const comics = await query_host("get_comic_infos", { urls: urls });
-    log_ok(comics);
+    log_ok("comic_info", comics);
     // my_console.log(new_comics);
     // my_console.log(comics);
     for (const comic of comics) {
-      log_ok(comic);
+      log_ok("comic", comic);
       print_comic(comic);
       comic.new_chap = new_comics.find(
         (new_comic) =>
@@ -230,12 +243,12 @@ async function scanweb(domain, override = undefined) {
       const scrape_chapters = await run_code(comic_tab.id, exec_script, [
         web.getChapters,
       ]);
-      log_ok(scrape_chapters);
+      log_ok("get_chapters", scrape_chapters);
       // chapters is mutable!
       var chapters = scrape_chapters[0].result.filter((chap) =>
         is_newer_than(chap.chapter, comic.chapter)
       );
-      log_ok(chapters);
+      log_ok("chapters", chapters);
 
       // chapters may be altered by this block of codes
       if (
@@ -245,7 +258,7 @@ async function scanweb(domain, override = undefined) {
         const scrape_latest_chap = await run_code(comic_tab.id, exec_script, [
           web.getLatestChap,
         ]);
-        log_ok(scrape_latest_chap);
+        log_ok("get_latest_chap", scrape_latest_chap);
         const latest_chap = scrape_latest_chap[0].result;
         if (
           chapters.length == 0 ||
@@ -284,22 +297,23 @@ async function scanweb(domain, override = undefined) {
         const scrape_images = await run_code(chapter_tab.id, exec_script, [
           web.getImages,
         ]);
-        log_ok(scrape_images);
+        log_ok("images", scrape_images);
         const image_urls = scrape_images[0].result;
         var chapter_ok = image_urls.length > 0;
         my_console.log("%cchapter " + chapter.chapter + " [", "color: gray");
-        if (!manga1001s.includes(current_domain) || chapter_ok) {
-          for (const [img_idx, image_url] of image_urls.entries()) {
-            if (img_idx == 0) {
-              await updateDynamicRules(chapter.url, image_url);
-            }
-            const args = [chapter_tab.id, image_url, folder, img_idx + 1];
-            var image_ok = false;
-            for (var tries = 1; !image_ok && tries <= max_num_tries; ++tries) {
-              image_ok = image_ok || (await download_image(tries, ...args));
-            }
-            chapter_ok = image_ok && chapter_ok;
+        // if (!manga1001s.includes(current_domain) || chapter_ok) {
+        for (const [img_idx, image_url] of image_urls.entries()) {
+          if (img_idx == 0) {
+            await updateDynamicRules(chapter.url, image_url);
           }
+          const args = [chapter_tab.id, image_url, folder, img_idx + 1];
+          var image_ok = false;
+          for (var tries = 1; !image_ok && tries <= max_num_tries; ++tries) {
+            image_ok = image_ok || (await download_image(tries, ...args));
+          }
+          chapter_ok = image_ok && chapter_ok;
+        }
+        /*
         } else {
           const num_images = await run_code(chapter_tab.id, exec_script, [
             "return document.evaluate(arguments[0], document, null, " +
@@ -335,13 +349,14 @@ async function scanweb(domain, override = undefined) {
             await save_data_url(data_url[0].result, folder, n);
           }
         }
+        */
         my_console.log_("%c]", "color: gray");
         if (chapter_ok) {
           const update_chapter = await query_host("update_chapter", {
             comic: comic.comic,
             chapter: chapter.chapter,
           });
-          log_ok(update_chapter);
+          log_ok("update_chapter", update_chapter);
         }
         await navigateTab(chapter_tab.id, comic.url);
       }
@@ -356,7 +371,7 @@ async function scanweb(domain, override = undefined) {
           domain: web.domain,
           url: next_last_visit,
         });
-        log_ok(update_last_visit);
+        log_ok("update_last_visit", update_last_visit);
         my_console.log("%cdone: (last visit)", "color: gray");
       }
       break;
@@ -367,7 +382,7 @@ async function scanweb(domain, override = undefined) {
           domain: web.domain,
           url: next_last_visit,
         });
-        log_ok(update_last_visit);
+        log_ok("update_last_visit", update_last_visit);
         my_console.log("%cdone: (max pages)", "color: gray");
       }
     }
@@ -421,7 +436,7 @@ async function download_image(num_tries, tab_id, url, folder, num) {
     },
   })
     .then(async (response) => {
-      log_ok(response);
+      log_ok("response", response);
       return response.ok
         ? response.blob()
         : Promise.reject(
@@ -431,7 +446,7 @@ async function download_image(num_tries, tab_id, url, folder, num) {
     .then(
       async (blob) =>
         await new Promise((resolve, reject) => {
-          // log_ok(blob);
+          // log_ok("blob", blob);
           const reader = new FileReader();
           reader.onloadend = () => resolve(reader.result);
           reader.onerror = () => reject("Error reading blob");
@@ -439,18 +454,18 @@ async function download_image(num_tries, tab_id, url, folder, num) {
         })
     )
     .then(async (base64) => {
-      // log_ok(base64);
+      // log_ok("base64", base64);
       const num_padded = ("00" + num).slice(-3);
       const filename = folder + num_padded;
-      log_ok(filename);
-      // log_ok({ file: filename, uri: base64 });
+      log_ok("filename", filename);
+      // log_ok("filename & contents", { file: filename, uri: base64 });
       return await query_host("save_image", {
         file: filename,
         uri: base64,
       });
     })
     .then((save_image) => {
-      // log_ok(save_image);
+      // log_ok("save_image", save_image);
       const color = num_tries == 1 ? "green" : "orange";
       if (num % 10 == 0) my_console.log_("%c" + num, "color: " + color);
       else if (num % 5 == 0) my_console.log_("%c|", "color: " + color);
@@ -472,8 +487,8 @@ async function download_image(num_tries, tab_id, url, folder, num) {
 async function save_data_url(data_url, folder, num) {
   const num_padded = ("00" + num).slice(-3);
   const filename = folder + num_padded;
-  log_ok(filename);
-  // log_ok({ file: filename, uri: base64 });
+  log_ok("filename", filename);
+  // log_ok("filename & contents", { file: filename, uri: base64 });
   await query_host("save_image", {
     file: filename,
     uri: data_url,
@@ -570,9 +585,12 @@ function run_code(tab_id, func, args = null) {
   );
 }
 
-function log_ok(result) {
+function log_ok(label, result) {
   if (!chrome.runtime.lastError) {
-    if (debug == true) my_console.log(result);
+    if (debug == true) {
+      my_console.log("%c" + label, "color: orange");
+      my_console.log(result);
+    }
     return true;
   } else {
     runtime_error = true;

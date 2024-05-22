@@ -16,8 +16,8 @@ for (const [idx, page] of pages.entries()) {
   var count = 0;
   do { await sleep(100); ++count; } while (!(await isTainted(canvas)) && count < 100);
   const img = document.createElement("img");
+  img.style.display = "none";
   img.src = canvas.toDataURL("mutelu/org");
   header.append(img);
 }
 console.log("done");
-window.scrollTo(0, document.body.scrollHeight);

@@ -63,6 +63,7 @@ async function setup_popup() {
       const spans = post_msg.content[0].split("%c");
       div.innerHTML =
         spans
+          .split("%c")
           .map((span, i) =>
             i == 0
               ? span

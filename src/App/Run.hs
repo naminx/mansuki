@@ -15,7 +15,15 @@ module App.Run where
 import App.Import hiding (link, on)
 import App.Types.Domain
 import Control.Lens (imap)
-import Data.Aeson as JSON (Result (..), Value, encode, fromJSON, json, object, (.=))
+import Data.Aeson as JSON (
+    Result (..),
+    Value,
+    encode,
+    fromJSON,
+    json,
+    object,
+    (.=),
+ )
 import qualified Data.Aeson.Encoding as JE
 import Data.Attoparsec.ByteString.Lazy (endOfInput, parseOnly)
 import Data.Binary.Builder (toLazyByteString)
@@ -41,6 +49,7 @@ import Text.URI (
  )
 import Text.URI.QQ (uri)
 
+
 run :: RIO App ()
 run = do
     mode <- asks (.options.mode)
@@ -55,8 +64,10 @@ run = do
         DisplayVersion -> runDisplayVersion
         ProduceNativeMessage val -> putMsg val
 
+
 putMsg :: Value -> RIO App ()
 putMsg = BL.putStr . valToMsg
+
 
 valToMsg :: Value -> BL.ByteString
 valToMsg jsonVal =
@@ -65,6 +76,7 @@ valToMsg jsonVal =
         putLazyByteString payload
   where
     payload = toLazyByteString $ JE.fromEncoding $ JE.value jsonVal
+
 
 runHost :: RIO App ()
 runHost = do
@@ -80,6 +92,7 @@ runHost = do
                 Error err -> throwM $ InvalidMessage err
                 Success msg -> runCommand msg
 
+
 runListWebs :: RIO App ()
 runListWebs = do
     dbFile <- asks (.dbFile)
@@ -87,10 +100,13 @@ runListWebs = do
     traverse_ printWeb allWebs
   where
     printWeb :: WebInfo -> RIO App ()
-    printWeb web = liftIO $ T.putStrLn [qt|${green'}${webWeb}${black'}) ${cyan}${webDomain}${default'}|]
+    printWeb web =
+        liftIO
+            $ T.putStrLn [qt|${green'}${webWeb}${black'}) ${cyan}${webDomain}${default'}|]
       where
         webWeb = web.web.getWeb
         webDomain = unRText web.domain
+
 
 runListComics :: RIO App ()
 runListComics = do
@@ -99,10 +115,12 @@ runListComics = do
     traverse_ printComic allComics
   where
     printComic :: ComicInfo -> RIO App ()
-    printComic comic = liftIO $ T.putStrLn [qt|${green'}${comicComic}${black'}) ${cyan}${comicTitle}|]
+    printComic comic =
+        liftIO $ T.putStrLn [qt|${green'}${comicComic}${black'}) ${cyan}${comicTitle}|]
       where
         comicComic = comic.comic.getComic
         comicTitle = comic.title.getTitle
+
 
 runListAllowedOrigins :: RIO App ()
 runListAllowedOrigins =
@@ -111,11 +129,13 @@ runListAllowedOrigins =
     printMe allowedOrigin =
         T.putStrLn [qt|${green}${allowedOrigin}${default'}|]
 
+
 runDisplayVersion :: RIO App ()
 runDisplayVersion =
     liftIO $ T.putStrLn [qt|${ver}|]
   where
     ver = $(simpleVersion version)
+
 
 runDisplayHelp :: RIO App ()
 runDisplayHelp =
@@ -148,17 +168,19 @@ Available commands:
   -h, --help                     Display this help text
 |]
 
+
 runCommand :: Message -> RIO App ()
 runCommand msg = do
     case msg of
         GetKnownWebs -> runGetKnownWebs
-        GetKnownComics{domain} -> runGetKnownComics domain
-        GetWebInfo{url} -> runGetWebInfo url
-        GetComicInfos{urls} -> runGetComicInfos urls
-        SaveImage{file, uri} -> runSaveImage file uri
-        UpdateChapter{comic, chapter} -> runUpdateChapter comic chapter
-        UpdateVolume{comic, volume} -> runUpdateVolume comic volume
-        UpdateLastVisit{domain, url} -> runUpdateLastVisit domain url
+        GetKnownComics {domain} -> runGetKnownComics domain
+        GetWebInfo {url} -> runGetWebInfo url
+        GetComicInfos {urls} -> runGetComicInfos urls
+        SaveImage {file, uri} -> runSaveImage file uri
+        UpdateChapter {comic, chapter} -> runUpdateChapter comic chapter
+        UpdateVolume {comic, volume} -> runUpdateVolume comic volume
+        UpdateLastVisit {domain, url} -> runUpdateLastVisit domain url
+
 
 runGetKnownWebs :: RIO App ()
 runGetKnownWebs = do
@@ -168,12 +190,14 @@ runGetKnownWebs = do
         putWord32host $ fromIntegral $ BL.length bytes
         putLazyByteString bytes
 
+
 queryKnownWebs ::
     (MonadThrow m, MonadUnliftIO m) =>
-    Path Abs File ->
-    m [Domain]
+    Path Abs File
+    -> m [Domain]
 queryKnownWebs dbFile =
     fmap (.domain) <$> queryAllWebInfo dbFile
+
 
 runGetKnownComics :: Domain -> RIO App ()
 runGetKnownComics domain = do
@@ -183,11 +207,12 @@ runGetKnownComics domain = do
         putWord32host $ fromIntegral $ BL.length bytes
         putLazyByteString bytes
 
+
 queryKnownComics ::
     (MonadThrow m, MonadUnliftIO m) =>
-    Path Abs File ->
-    Domain ->
-    m [ComicInfo]
+    Path Abs File
+    -> Domain
+    -> m [ComicInfo]
 queryKnownComics dbFile domain = do
     bracket (createSqlBackend dbFile) (liftIO . close')
         $ (map unValues <$>)
@@ -222,6 +247,7 @@ queryKnownComics dbFile domain = do
             , chapter = unValue chapter
             }
 
+
 runGetWebInfo :: URI -> RIO App ()
 runGetWebInfo url = do
     dbFile <- asks (.dbFile)
@@ -230,24 +256,26 @@ runGetWebInfo url = do
         putWord32host $ fromIntegral $ BL.length bytes
         putLazyByteString bytes
 
+
 queryWebInfo ::
     (MonadThrow m, MonadUnliftIO m) =>
-    Path Abs File ->
-    URI ->
-    m WebInfo
+    Path Abs File
+    -> URI
+    -> m WebInfo
 queryWebInfo dbFile url =
     case url.uriAuthority of
         Left _ -> throwM $ UrlNotContainHostName $ renderStr url
-        Right Authority{authHost} -> do
+        Right Authority {authHost} -> do
             allWebInfo <- queryAllWebInfo dbFile
             case filter ((.domain) >>> (== authHost)) allWebInfo of
                 [] -> throwM $ UnknownWeb $ renderStr url
                 result : _ -> return result
 
+
 queryAllWebInfo ::
     (MonadThrow m, MonadUnliftIO m) =>
-    Path Abs File ->
-    m [WebInfo]
+    Path Abs File
+    -> m [WebInfo]
 queryAllWebInfo dbFile =
     bracket (createSqlBackend dbFile) (liftIO . close')
         $ (map unValues <$>)
@@ -293,10 +321,11 @@ queryAllWebInfo dbFile =
                 , getImages = unValue getImages
                 }
 
+
 queryAllComicInfo ::
     (MonadThrow m, MonadUnliftIO m) =>
-    Path Abs File ->
-    m [ComicInfo]
+    Path Abs File
+    -> m [ComicInfo]
 queryAllComicInfo dbFile =
     bracket (createSqlBackend dbFile) (liftIO . close')
         $ (map unValues <$>)
@@ -328,6 +357,7 @@ queryAllComicInfo dbFile =
                 , chapter = unValue chapter
                 }
 
+
 runGetComicInfos :: [URI] -> RIO App ()
 runGetComicInfos urls = do
     dbFile <- asks (.dbFile)
@@ -336,10 +366,11 @@ runGetComicInfos urls = do
         putWord32host $ fromIntegral $ BL.length bytes
         putLazyByteString bytes
 
+
 -- Lookup for comics.
 -- This version keeps the order of comics supplied
 -- by means of immediate index & values table.
-queryComicInfos :: (MonadUnliftIO m) => Path Abs File -> [URI] -> m [ComicInfo]
+queryComicInfos :: MonadUnliftIO m => Path Abs File -> [URI] -> m [ComicInfo]
 queryComicInfos _ [] = return []
 queryComicInfos dbFile (link : links) =
     bracket (createSqlBackend dbFile) (liftIO . close')
@@ -380,6 +411,7 @@ queryComicInfos dbFile (link : links) =
             , chapter = unValue chapter
             }
 
+
 runSaveImage :: Path Rel File -> Text -> RIO App ()
 runSaveImage relBase dataUri =
     case parseOnly (parseImageData <* endOfInput) (cs dataUri) of
@@ -398,12 +430,13 @@ runSaveImage relBase dataUri =
                         putWord32host $ fromIntegral $ BL.length bytes
                         putLazyByteString bytes
   where
-    mkDirs :: (MonadUnliftIO m) => Path Abs Dir -> m ()
+    mkDirs :: MonadUnliftIO m => Path Abs Dir -> m ()
     mkDirs dir = do
         dirExists <- liftIO $ doesDirectoryExist $ toFilePath dir
         unless dirExists $ liftIO $ do
             mkDirs $ parent dir
             createDirectory $ toFilePath dir
+
 
 runUpdateChapter :: Comic -> Chapter -> RIO App ()
 runUpdateChapter comic chapter = do
@@ -414,7 +447,8 @@ runUpdateChapter comic chapter = do
         putWord32host $ fromIntegral $ BL.length bytes
         putLazyByteString bytes
 
-updateChapter :: (MonadUnliftIO m) => Path Abs File -> Comic -> Chapter -> m Int
+
+updateChapter :: MonadUnliftIO m => Path Abs File -> Comic -> Chapter -> m Int
 updateChapter dbFile comic chapter =
     bracket (createSqlBackend dbFile) (liftIO . close')
         $ runSqlConn
@@ -425,6 +459,7 @@ updateChapter dbFile comic chapter =
         set_ row [ComicsChapter =. val chapter]
         where_ $ row.comic ==. val comic
 
+
 runUpdateVolume :: Comic -> Volume -> RIO App ()
 runUpdateVolume comic volume = do
     dbFile <- asks (.dbFile)
@@ -434,7 +469,8 @@ runUpdateVolume comic volume = do
         putWord32host $ fromIntegral $ BL.length bytes
         putLazyByteString bytes
 
-updateVolume :: (MonadUnliftIO m) => Path Abs File -> Comic -> Volume -> m Int
+
+updateVolume :: MonadUnliftIO m => Path Abs File -> Comic -> Volume -> m Int
 updateVolume dbFile comic volume =
     bracket (createSqlBackend dbFile) (liftIO . close')
         $ runSqlConn
@@ -445,6 +481,7 @@ updateVolume dbFile comic volume =
         set_ row [ComicsVolume =. val volume]
         where_ $ row.comic ==. val comic
 
+
 runUpdateLastVisit :: Domain -> URI -> RIO App ()
 runUpdateLastVisit domain url = do
     dbFile <- asks (.dbFile)
@@ -454,7 +491,8 @@ runUpdateLastVisit domain url = do
         putWord32host $ fromIntegral $ BL.length bytes
         putLazyByteString bytes
 
-updateLastVisit :: (MonadUnliftIO m) => Path Abs File -> Domain -> URI -> m Int
+
+updateLastVisit :: MonadUnliftIO m => Path Abs File -> Domain -> URI -> m Int
 updateLastVisit dbFile domain url =
     bracket (createSqlBackend dbFile) (liftIO . close')
         $ runSqlConn
@@ -465,17 +503,19 @@ updateLastVisit dbFile domain url =
         set_ row [WebsLastVisit =. val url]
         where_ $ row.domain ==. val domain
 
+
 runAddComic :: Title -> Path Rel Dir -> RIO App ()
 runAddComic title folder = do
     dbFile <- asks (.dbFile)
     insertComic dbFile title folder
 
+
 insertComic ::
     (MonadThrow m, MonadUnliftIO m) =>
-    Path Abs File ->
-    Title ->
-    Path Rel Dir ->
-    m ()
+    Path Abs File
+    -> Title
+    -> Path Rel Dir
+    -> m ()
 insertComic dbFile title folder = do
     bracket (createSqlBackend dbFile) (liftIO . close')
         $ runSqlConn
@@ -487,7 +527,7 @@ insertComic dbFile title folder = do
             result <- select $ do
                 comics <- from $ table @Comics
                 where_ $ comics.folder >=. val folder
-                return $ min_ (comics.comic)
+                return $ min_ comics.comic
             case mapMaybe unValue result of
                 comic : _ -> do
                     -- UPDATE comics
@@ -524,6 +564,7 @@ insertComic dbFile title folder = do
                 (Volume 0)
                 (Chapter 0 Nothing "")
 
+
 runRemoveComic :: Comic -> RIO App ()
 runRemoveComic (Comic comic) = do
     dbFile <- asks (.dbFile)
@@ -547,6 +588,7 @@ runRemoveComic (Comic comic) = do
             update $ \comics -> do
                 set_ comics [ComicsComic =. val (Comic 0) -. comics.comic]
                 where_ $ comics.comic <. val (Comic 0)
+
 
 runSetChapter :: Comic -> Chapter -> RIO App ()
 runSetChapter comic chapter = do
