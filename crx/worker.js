@@ -183,8 +183,10 @@ async function scanweb(domain, override = undefined) {
   var next_last_visit = web.lastVisit;
   var hit = false;
   const tab = await createTab("https://www.google.com/ncr");
+  console.log("1");
   for (const ipage of [...Array(!override ? max_pages : 1).keys()]) {
     const page = ipage + 1;
+    console.log("2:" + page);
     const get_nth_page = await run_code(tab.id, exec_script, [
       web.getNthPage,
       page,
@@ -192,7 +194,9 @@ async function scanweb(domain, override = undefined) {
     log_ok("nth_page", get_nth_page);
     const nth_page_path = get_nth_page[0].result;
     my_console.log("%cfetching page " + page, "color: gray");
-    await navigateTab(tab.id, "https://" + web.domain + nth_page_path);
+    if (nth_page_path != "#") {
+      await navigateTab(tab.id, "https://" + web.domain + nth_page_path);
+    }
     if (false && manga1001s.includes(current_domain)) {
       await run_code(tab.id, exec_script, [
         "" +

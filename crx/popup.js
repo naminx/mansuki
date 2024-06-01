@@ -41,16 +41,18 @@ async function setup_popup() {
       my_console.textContent = "";
       for (const line of post_msg.content) {
         const div = document.createElement("div");
-        const spans = line[0].split("%c");
-        div.innerHTML =
-          spans
-            .map((span, i) =>
-              i == 0
-                ? span
-                : '<span style="' + line[i] + '">' + span + "</span>"
-            )
-            .join("") + "<br>";
-        my_console.append(div);
+        if (typeof line[0] === "string" || line[0] instanceof String) {
+          const spans = line[0].split("%c");
+          div.innerHTML =
+            spans
+              .map((span, i) =>
+                i == 0
+                  ? span
+                  : '<span style="' + line[i] + '">' + span + "</span>"
+              )
+              .join("") + "<br>";
+          my_console.append(div);
+        }
       }
     } else if (post_msg.tag == "update_console") {
       const div = document.evaluate(
@@ -60,28 +62,45 @@ async function setup_popup() {
         XPathResult.FIRST_ORDERED_NODE_TYPE,
         null
       ).singleNodeValue;
-      const spans = post_msg.content[0].split("%c");
-      div.innerHTML =
-        spans
-          .split("%c")
-          .map((span, i) =>
-            i == 0
-              ? span
-              : '<span style="' + post_msg.content[i] + '">' + span + "</span>"
-          )
-          .join("") + "<br>";
+      if (
+        typeof post_msg.content[0] === "string" ||
+        post_msg.content[0] instanceof String
+      ) {
+        const spans = post_msg.content[0].split("%c");
+        div.innerHTML =
+          spans
+            .map((span, i) =>
+              i == 0
+                ? span
+                : '<span style="' +
+                  post_msg.content[i] +
+                  '">' +
+                  span +
+                  "</span>"
+            )
+            .join("") + "<br>";
+      }
     } else if (post_msg.tag == "append_console") {
       const div = document.createElement("div");
-      const spans = post_msg.content[0].split("%c");
-      div.innerHTML =
-        spans
-          .map((span, i) =>
-            i == 0
-              ? span
-              : '<span style="' + post_msg.content[i] + '">' + span + "</span>"
-          )
-          .join("") + "<br>";
-      my_console.append(div);
+      if (
+        typeof post_msg.content[0] === "string" ||
+        post_msg.content[0] instanceof String
+      ) {
+        const spans = post_msg.content[0].split("%c");
+        div.innerHTML =
+          spans
+            .map((span, i) =>
+              i == 0
+                ? span
+                : '<span style="' +
+                  post_msg.content[i] +
+                  '">' +
+                  span +
+                  "</span>"
+            )
+            .join("") + "<br>";
+        my_console.append(div);
+      }
     }
   });
   scan_button.onclick = async function () {

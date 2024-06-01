@@ -6,7 +6,9 @@ const header = document.createElement("div");
 header.style.display = "none";
 header.style.visibility = "hidden";
 body.append(header);
-for (const canvas of xpaths('//li[contains(@id, "splide01-slide")]//canvas')) {
+const canvases = xpaths('//li[contains(@id, "splide01-slide")]//canvas');
+for (const [idx, canvas] of canvases.entries()) {
+  console.log("" + idx + "/" + (canvases.length - 1));
   const img = document.createElement("img");
   img.style.display = "none";
   img.src = await canvas.toDataURL("mutelu/org");
