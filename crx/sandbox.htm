@@ -1,0 +1,8 @@
+<html>
+  <script>
+    window.addEventListener("message", async (event) => {
+      event.source.window.postMessage(/* eval(event.data) */ "baka", event.origin);
+    });
+  </script>
+  <body></body>
+</html>

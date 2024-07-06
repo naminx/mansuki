@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "version": "0.0.1",
+  "name": "ManSuki",
+  "description": "Man(ga)Suki: Download comics from selected websites.",
+  "background": {
+    "service_worker": "worker.js"
+  },
+  "permissions": [
+    "activeTab",
+    "contextMenus",
+    "declarativeNetRequestFeedback",
+    "declarativeNetRequestWithHostAccess",
+    "downloads",
+    "nativeMessaging",
+    "notifications",
+    "offscreen",
+    "pageCapture",
+    "scripting",
+    "storage"
+  ],
+  "icons": {
+    "192": "mansuki.png"
+  },
+  "action": {
+    "default_popup": "popup.htm"
+  },
+  "host_permissions": ["<all_urls>"],
+  "commands": {
+    "_execute_action": {
+      "description": "Press the action button"
+    }
+  },
+  "sandbox": {
+    "pages": ["sandbox.htm"]
+  }
+}
