@@ -254,7 +254,7 @@ async function scanweb(domain, override = undefined) {
       var chapters = scrape_chapters[0].result.filter((chap) =>
         is_newer_than(chap.chapter, comic.chapter)
       );
-      log_ok("chapters", chapters);
+      log_ok("chapters (filtered)", chapters);
 
       // chapters may be altered by this block of codes
       if (
@@ -273,6 +273,7 @@ async function scanweb(domain, override = undefined) {
           chapters.push({ chapter: latest_chap.chapter, url: latest_chap.url });
         }
       }
+      log_ok("chapters (final)", chapters);
 
       for (const chapter of chapters) {
         const chap_splitted = chapter.chapter.split(".", 2);
