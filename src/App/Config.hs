@@ -8,14 +8,11 @@ import Data.Aeson
 import Path (Abs, Dir, File, Path, absdir, absfile)
 import RIO
 
-
 defaultComicDir :: Path Abs Dir
-defaultComicDir = [absdir|/mnt/r/comics/|]
-
+defaultComicDir = [absdir|/home/namin/comics/|]
 
 defaultDbFile :: Path Abs File
 defaultDbFile = [absfile|/home/namin/haskell/mansuki/mansuki.db|]
-
 
 defaultConfig :: Value
 defaultConfig =
@@ -24,10 +21,8 @@ defaultConfig =
         , "db-file" .= defaultDbFile
         ]
 
-
 maxContentLen :: Int
 maxContentLen = 500
-
 
 knownAllowedOrigins :: [Text]
 knownAllowedOrigins =

@@ -11,14 +11,7 @@ for (const [idx, page] of pages.entries()) {
   console.log("" + (idx + 1) + "/" + pages.length);
   do { await sleep(100); } while ( document.evaluate("count(canvas)", page, null, XPathResult.NUMBER_TYPE, null).numberValue == 0);
   const canvas = document.evaluate("canvas", page, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-  var count = 0;
-  do {
-    await sleep(100);
-    ++count;
-  } while (!isTainted(canvas) && count < 100);
-  const img = document.createElement("img");
-  img.src = canvas.toDataURL("mutelu/org");
-  img.style.display = "none";
-  header.append(img);
+  var count = 0; do { await sleep(100); ++count; } while (!isTainted(canvas) && count < 100);
+  const img = document.createElement("img"); img.src = canvas.toDataURL("mutelu/org"); img.style.display = "none"; header.append(img);
 }
 console.log("done");
