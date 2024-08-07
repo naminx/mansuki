@@ -26,7 +26,6 @@ main = do
             [defaultConfig]
             ignoreEnv ::
             IO Config
-    pPrint config.comicDir
     options <- execParser userOptions
     logOptions <- logOptionsHandle stderr options.verbose
     procContext <- mkDefaultProcessContext
