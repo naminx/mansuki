@@ -108,7 +108,16 @@ const manga1001s = [
 async function default_delay(extra = 0) {
   const sleep = (msec) =>
     new Promise((resolve) => setTimeout(() => resolve(), msec));
-  await sleep(3000 + extra + Math.random() * 3000);
+  const sleep_split = async (msec) => {
+    if (msec > 1000) {
+      await sleep(1000);
+      my_console.log_("%c.", "color: gray");
+      await sleep_split(msec - 1000);
+    } else {
+      await sleep(msec);
+    }
+  };
+  await sleep_split(3000 + extra + Math.random() * 3000);
 }
 
 function createTab(url) {
@@ -219,7 +228,7 @@ async function scanweb(domain, override = undefined) {
           comic_url
             .replace(/%([0-9A-Fa-f][0-9A-Fa-f])/g, (hex) => hex.toLowerCase())
             .replace("!", "%21") == web.lastVisit),
-      new_comics.map((comic) => comic.url)
+      new_comics.map((comic) => comic.url),
     );
     log_ok("urls", urls);
     if (page == 1) {
@@ -240,7 +249,7 @@ async function scanweb(domain, override = undefined) {
         (new_comic) =>
           new_comic.url
             .replace(/%([0-9A-Fa-f][0-9A-Fa-f])/g, (hex) => hex.toLowerCase())
-            .replace("!", "%21") == comic.url
+            .replace("!", "%21") == comic.url,
       ).chapter;
       if (!!comic.new_chap && !is_newer_than(comic.new_chap, comic.chapter))
         continue;
@@ -252,7 +261,7 @@ async function scanweb(domain, override = undefined) {
       log_ok("get_chapters", scrape_chapters);
       // chapters is mutable!
       var chapters = scrape_chapters[0].result.filter((chap) =>
-        is_newer_than(chap.chapter, comic.chapter)
+        is_newer_than(chap.chapter, comic.chapter),
       );
       log_ok("chapters (filtered)", chapters);
 
@@ -304,9 +313,11 @@ async function scanweb(domain, override = undefined) {
         } */
 
         await default_delay();
-        const scrape_images = await run_code(chapter_tab.id, exec_script, [
-          web.getImages,
-        ]);
+        const scrape_images = await run_code(
+          chapter_tab.id,
+          exec_async_script,
+          [web.getImages],
+        );
         log_ok("images", scrape_images);
         const image_urls = scrape_images[0].result;
         var chapter_ok = image_urls.length > 0;
@@ -407,7 +418,7 @@ function print_comic(comic) {
   my_console.log(
     "%c" + comic.title + " %c" + progress(comic),
     "color: yellow",
-    "color: gray"
+    "color: gray",
   );
 }
 
@@ -439,30 +450,38 @@ async function updateDynamicRules(chapter_url, image_url) {
 }
 
 async function download_image(num_tries, tab_id, url, folder, num) {
-  return await fetch(url, {
-    method: "GET",
-    headers: {
-      Accept: "image/webp;q=1,image/jpeg;q=0.9,image/*;q=0.8",
-    },
-  })
-    .then(async (response) => {
-      log_ok("response", response);
-      return response.ok
-        ? response.blob()
-        : Promise.reject(
-            "Bad server response: " + response.status + " (" + num_tries + ")"
-          );
-    })
-    .then(
-      async (blob) =>
-        await new Promise((resolve, reject) => {
-          // log_ok("blob", blob);
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.onerror = () => reject("Error reading blob");
-          reader.readAsDataURL(blob);
+  return await (
+    url.substring(0, 4) === "http"
+      ? fetch(url, {
+          method: "GET",
+          headers: {
+            Accept: "image/webp;q=1,image/jpeg;q=0.9,image/*;q=0.8",
+          },
         })
-    )
+          .then(async (response) => {
+            log_ok("response", response);
+            return response.ok
+              ? response.blob()
+              : Promise.reject(
+                  "Bad server response: " +
+                    response.status +
+                    " (" +
+                    num_tries +
+                    ")",
+                );
+          })
+          .then(
+            async (blob) =>
+              await new Promise((resolve, reject) => {
+                // log_ok("blob", blob);
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = () => reject("Error reading blob");
+                reader.readAsDataURL(blob);
+              }),
+          )
+      : (async () => url)()
+  )
     .then(async (base64) => {
       // log_ok("base64", base64);
       const num_padded = ("00" + num).slice(-3);
@@ -591,7 +610,7 @@ function run_code(tab_id, func, args = null) {
   return chrome.scripting.executeScript(
     args === undefined || args === null || args === []
       ? { target: { tabId: tab_id }, func: func }
-      : { target: { tabId: tab_id }, func: func, args: args }
+      : { target: { tabId: tab_id }, func: func, args: args },
   );
 }
 
@@ -651,7 +670,7 @@ async function exec_script(script, ...argv) {
       ("       (((...arguments) => {" + script + "})(" + args + "))}}") +
       "));" +
       "return false;" +
-      "})(this)"
+      "})(this)",
   );
   result = JSON.parse(
     await new Promise((resolve) => {
@@ -659,7 +678,7 @@ async function exec_script(script, ...argv) {
         resolve(e.detail.value);
       });
       input.click();
-    })
+    }),
   );
   input.parentNode.removeChild(input);
   return result;
@@ -685,7 +704,7 @@ async function exec_async_script(script, ...argv) {
       (" new CustomEvent(" + JSON.stringify(uuid) + ",") +
       "    { detail: { value: JSON.stringify(result) }}));" +
       "return false;" +
-      "})(this)"
+      "})(this)",
   );
   result = JSON.parse(
     await new Promise((resolve) => {
@@ -693,7 +712,7 @@ async function exec_async_script(script, ...argv) {
         resolve(e.detail.value);
       });
       input.click();
-    })
+    }),
   );
   input.parentNode.removeChild(input);
   return result;
