@@ -7,6 +7,16 @@ const blobURLtoDataURL = (url) => fetch(url).then((response) => response.blob())
   () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(blob); }));
 const header = xpaths('//div[@id="sidemenu"]')[0];
 const num_pages = xpaths('//div[@id="menu_slidercaption"]')[0].textContent.replace(/.*\//, "");
+const leftArrowEvent = new KeyboardEvent("keydown", {
+  key: "ArrowLeft",
+  code: "ArrowLeft",
+  keyCode: 37,
+  which: 37,
+  bubbles: true,
+  cancelable: true,
+});
+const div_content = xpaths('//div[@id="content"]')[0];
+const next = () => div_content.dispatchEvent(leftArrowEvent);
 for (var n = 0; n <= num_pages; ++n) { console.log("" + n + "/" + num_pages);
   do { await sleep(100); } while ( document.evaluate(
     'count(//div[@id="content-p' + n + '"]/div/div/img)',

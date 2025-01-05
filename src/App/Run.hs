@@ -116,10 +116,14 @@ runListComics = do
   where
     printComic :: ComicInfo -> RIO App ()
     printComic comic =
-        liftIO $ T.putStrLn [qt|${green'}${comicComic}${black'}) ${cyan}${comicTitle}|]
+        liftIO $ T.putStrLn [qt|${green'}${comicComic}${black'}) ${cyan}${comicTitle} ${black'}(${comicChapNo}${comicSection})|]
       where
         comicComic = comic.comic.getComic
         comicTitle = comic.title.getTitle
+        comicChapNo = comic.chapter.chapNo
+        comicSection = case comic.chapter.section of
+          Nothing -> ""
+          Just s -> "." ++ show s
 
 
 runListAllowedOrigins :: RIO App ()
